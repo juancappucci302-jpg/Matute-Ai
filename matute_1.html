@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Matute">
+<title>Matute 💀</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --blood: #8B0000;
+    --ember: #CC2200;
+    --bone: #E8DCC8;
+    --ash: #2A2A2A;
+    --void: #0A0A0A;
+    --glow: #FF2200;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--void);
+    color: var(--bone);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 16px 40px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Fondo con partículas */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(139,0,0,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(139,0,0,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .title {
+    font-family: 'Creepster', cursive;
+    font-size: clamp(2.5rem, 10vw, 4rem);
+    color: var(--ember);
+    letter-spacing: 0.08em;
+    text-shadow: 0 0 20px rgba(204,34,0,0.6), 0 0 40px rgba(204,34,0,0.3);
+    line-height: 1;
+  }
+
+  .subtitle {
+    font-size: 0.65rem;
+    color: #555;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* Cráneo SVG animado */
+  .skull-container {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    z-index: 1;
+  }
+
+  .skull-svg {
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 12px rgba(204,34,0,0.4));
+  }
+
+  .eye-left, .eye-right {
+    transition: fill 0.3s ease;
+  }
+
+  @keyframes pulse-eyes {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .idle .eye-left, .idle .eye-right {
+    animation: pulse-eyes 2s ease-in-out infinite;
+    fill: #CC0000;
+  }
+
+  @keyframes thinking-spin {
+    0% { fill: #FF8800; }
+    50% { fill: #FFCC00; }
+    100% { fill: #FF8800; }
+  }
+
+  .thinking .eye-left, .thinking .eye-right {
+    animation: thinking-spin 0.6s ease-in-out infinite;
+  }
+
+  .talking .eye-left, .talking .eye-right {
+    fill: #00FF55;
+    animation: none;
+  }
+
+  /* Mandíbula animada */
+  .jaw {
+    transform-origin: 90px 145px;
+    transition: transform 0.1s ease;
+  }
+
+  .talking .jaw {
+    animation: jaw-talk 0.15s ease-in-out infinite alternate;
+  }
+
+  @keyframes jaw-talk {
+    from { transform: rotate(-2deg); }
+    to   { transform: rotate(5deg); }
+  }
+
+  /* Panel de estado */
+  .status-panel {
+    width: 100%;
+    max-width: 340px;
+    z-index: 1;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #333;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .status-dot.active { background: var(--ember); box-shadow: 0 0 6px var(--ember); }
+  .status-dot.ok     { background: #00AA44; box-shadow: 0 0 6px #00AA44; }
+
+  .status-text {
+    font-size: 0.7rem;
+    color: #666;
+    letter-spacing: 0.05em;
+  }
+
+  /* Burbuja de respuesta */
+  .response-bubble {
+    background: rgba(139,0,0,0.12);
+    border: 1px solid rgba(139,0,0,0.25);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.85rem;
+    color: var(--bone);
+    line-height: 1.5;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 12px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+
+  .response-bubble.active {
+    border-color: rgba(204,34,0,0.5);
+    box-shadow: 0 0 20px rgba(204,34,0,0.1);
+  }
+
+  .placeholder-text { color: #444; font-style: italic; font-size: 0.75rem; }
+
+  /* Texto que se escribe */
+  @keyframes typing-cursor {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  .typing::after {
+    content: '▋';
+    animation: typing-cursor 0.7s infinite;
+    color: var(--ember);
+  }
+
+  /* Transcripción */
+  .transcript {
+    font-size: 0.65rem;
+    color: #444;
+    text-align: center;
+    min-height: 18px;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  /* Botón micrófono */
+  .mic-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    z-index: 1;
+    width: 100%;
+  }
+
+  .mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    background: #111;
+    color: var(--bone);
+    font-size: 2rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    -webkit-appearance: none;
+  }
+
+  .mic-btn:active { transform: scale(0.94); }
+
+  .mic-btn.listening {
+    border-color: var(--ember);
+    background: rgba(204,34,0,0.15);
+    box-shadow: 0 0 0 0 rgba(204,34,0,0.4);
+    animation: mic-pulse 1s ease-out infinite;
+  }
+
+  @keyframes mic-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(204,34,0,0.4); }
+    70%  { box-shadow: 0 0 0 20px rgba(204,34,0,0); }
+    100% { box-shadow: 0 0 0 0 rgba(204,34,0,0); }
+  }
+
+  .mic-btn.thinking {
+    border-color: #FF8800;
+    animation: thinking-border 0.5s ease-in-out infinite alternate;
+  }
+
+  @keyframes thinking-border {
+    from { box-shadow: 0 0 8px #FF8800; }
+    to   { box-shadow: 0 0 20px #FFCC00; }
+  }
+
+  .mic-btn.speaking {
+    border-color: #00AA44;
+    box-shadow: 0 0 16px rgba(0,170,68,0.4);
+  }
+
+  .mic-label {
+    font-size: 0.65rem;
+    color: #555;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* API Key input */
+  .settings {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #111;
+    border-top: 1px solid #222;
+    padding: 16px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+
+  .settings.open { transform: translateY(0); }
+
+  .settings input {
+    width: 100%;
+    background: #1A1A1A;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--bone);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    outline: none;
+    margin-bottom: 10px;
+  }
+
+  .settings input:focus { border-color: var(--ember); }
+
+  .btn-small {
+    background: var(--blood);
+    color: var(--bone);
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+  }
+
+  .settings-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: 1px solid #333;
+    color: #555;
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    z-index: 10;
+    letter-spacing: 0.1em;
+  }
+
+  /* Error toast */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #300;
+    border: 1px solid var(--blood);
+    color: #FF6666;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 200;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .settings-label {
+    font-size: 0.65rem;
+    color: #555;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- Botón configuración -->
+<button class="settings-toggle" onclick="toggleSettings()">⚙ CONFIG</button>
+
+<!-- Header -->
+<div class="header">
+  <div class="title">MATUTE</div>
+  <div class="subtitle">cráneo · inteligencia artificial · v1.0</div>
+</div>
+
+<!-- Cráneo SVG -->
+<div class="skull-container" id="skullContainer">
+  <svg class="skull-svg" viewBox="0 0 180 190" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Cráneo principal -->
+    <ellipse cx="90" cy="80" rx="72" ry="75" fill="#1A1A1A" stroke="#3A2A2A" stroke-width="1.5"/>
+    <!-- Frente detalle -->
+    <ellipse cx="90" cy="60" rx="55" ry="48" fill="#111"/>
+    <!-- Pómulos -->
+    <ellipse cx="32" cy="100" rx="20" ry="16" fill="#161616"/>
+    <ellipse cx="148" cy="100" rx="20" ry="16" fill="#161616"/>
+    <!-- Cuenca ojo izq -->
+    <ellipse cx="62" cy="82" rx="22" ry="20" fill="#050505"/>
+    <!-- Cuenca ojo der -->
+    <ellipse cx="118" cy="82" rx="22" ry="20" fill="#050505"/>
+    <!-- Ojo izq (LED) -->
+    <ellipse class="eye-left" cx="62" cy="82" rx="14" ry="13" fill="#CC0000"/>
+    <ellipse cx="62" cy="82" rx="6" ry="6" fill="#000" opacity="0.5"/>
+    <!-- Ojo der (LED) -->
+    <ellipse class="eye-right" cx="118" cy="82" rx="14" ry="13" fill="#CC0000"/>
+    <ellipse cx="118" cy="82" rx="6" ry="6" fill="#000" opacity="0.5"/>
+    <!-- Nariz -->
+    <path d="M82 108 Q90 118 98 108" stroke="#2A1A1A" stroke-width="2" fill="none"/>
+    <ellipse cx="85" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
+    <ellipse cx="95" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
+    <!-- Arco cigomático -->
+    <path d="M20 95 Q15 105 22 118" stroke="#2A2A2A" stroke-width="1.5" fill="none"/>
+    <path d="M160 95 Q165 105 158 118" stroke="#2A2A2A" stroke-width="1.5" fill="none"/>
+    <!-- Base cráneo -->
+    <rect x="28" y="128" width="124" height="12" rx="4" fill="#151515" stroke="#2A2A2A" stroke-width="1"/>
+    <!-- Mandíbula -->
+    <g class="jaw" id="jaw">
+      <path d="M35 135 Q35 165 90 168 Q145 165 145 135" fill="#181818" stroke="#2A2A2A" stroke-width="1.5"/>
+      <!-- Dientes superiores -->
+      <rect x="55" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
+      <rect x="68" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+      <rect x="81" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+      <rect x="94" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+      <rect x="107" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
+      <!-- Dientes inferiores -->
+      <rect x="58" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
+      <rect x="70" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+      <rect x="82" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+      <rect x="94" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+      <rect x="106" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
+      <!-- Barbilla -->
+      <ellipse cx="90" cy="166" rx="30" ry="8" fill="#151515"/>
+    </g>
+    <!-- Grietas decorativas -->
+    <path d="M90 15 L88 35 L92 45" stroke="#2A2A2A" stroke-width="1" fill="none"/>
+    <path d="M50 40 L60 55" stroke="#2A2A2A" stroke-width="0.8" fill="none"/>
+    <path d="M130 40 L120 55" stroke="#2A2A2A" stroke-width="0.8" fill="none"/>
+  </svg>
+</div>
+
+<!-- Panel de estado y respuesta -->
+<div class="status-panel">
+  <div class="status-bar">
+    <div class="status-dot" id="dotApi"></div>
+    <div class="status-text" id="statusText">Configurá tu API key para comenzar</div>
+  </div>
+
+  <div class="response-bubble" id="responseBubble">
+    <span class="placeholder-text" id="placeholderText">Preguntame algo... si te animás.</span>
+  </div>
+
+  <div class="transcript" id="transcriptText"></div>
+</div>
+
+<!-- Micrófono -->
+<div class="mic-area">
+  <button class="mic-btn" id="micBtn" onclick="handleMic()">🎙</button>
+  <div class="mic-label" id="micLabel">toca para hablar</div>
+</div>
+
+<!-- Settings panel -->
+<div class="settings" id="settingsPanel">
+  <label class="settings-label">API KEY DE ANTHROPIC</label>
+  <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"/>
+  <label class="settings-label">PERSONALIDAD DE MATUTE</label>
+  <input type="text" id="systemPromptInput" 
+    value="Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones. Usás expresiones de ultratumba."
+    autocomplete="off"/>
+  <button class="btn-small" onclick="saveSettings()">GUARDAR Y CERRAR</button>
+</div>
+
+<!-- Toast error -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Estado ──────────────────────────────────────
+let apiKey = localStorage.getItem('matute_key') || '';
+let systemPrompt = localStorage.getItem('matute_prompt') || 
+  'Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones. Usás expresiones de ultratumba.';
+let recognition = null;
+let currentState = 'idle'; // idle | listening | thinking | speaking
+let synth = window.speechSynthesis;
+let conversationHistory = [];
+
+// ── Init ─────────────────────────────────────────
+window.onload = () => {
+  if (apiKey) {
+    document.getElementById('apiKeyInput').value = apiKey;
+    setStatus('ok', 'Matute listo · toca el micrófono');
+  }
+  document.getElementById('systemPromptInput').value = systemPrompt;
+  setupSpeechRecognition();
+  updateSkullState('idle');
+};
+
+// ── Speech Recognition ───────────────────────────
+function setupSpeechRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('Tu navegador no soporta reconocimiento de voz');
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = 'es-AR';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  recognition.onstart = () => {
+    setState('listening');
+    document.getElementById('transcriptText').textContent = 'Escuchando...';
+  };
+
+  recognition.onresult = (e) => {
+    const transcript = Array.from(e.results)
+      .map(r => r[0].transcript).join('');
+    document.getElementById('transcriptText').textContent = '» ' + transcript;
+    if (e.results[e.results.length - 1].isFinal) {
+      recognition.stop();
+      askClaude(transcript);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    setState('idle');
+    if (e.error === 'not-allowed') showToast('Permiso de micrófono denegado');
+    else if (e.error === 'no-speech') showToast('No escuché nada...');
+    else showToast('Error: ' + e.error);
+  };
+
+  recognition.onend = () => {
+    if (currentState === 'listening') setState('idle');
+  };
+}
+
+// ── Micrófono ─────────────────────────────────────
+function handleMic() {
+  if (!apiKey) { toggleSettings(); showToast('Primero configurá tu API key'); return; }
+  if (currentState === 'listening') { recognition?.stop(); setState('idle'); return; }
+  if (currentState === 'thinking' || currentState === 'speaking') {
+    synth.cancel(); setState('idle'); return;
+  }
+  try { recognition?.start(); }
+  catch(e) { showToast('Error al iniciar micrófono'); }
+}
+
+// ── Claude API ────────────────────────────────────
+async function askClaude(userText) {
+  setState('thinking');
+  setStatus('ok', 'Matute está pensando...');
+
+  conversationHistory.push({ role: 'user', content: userText });
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01',
+        'x-api-key': apiKey,
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
+        system: systemPrompt,
+        messages: conversationHistory
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || 'Error de API');
+    }
+
+    const data = await response.json();
+    const reply = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // Limitar historial a últimas 10 interacciones
+    if (conversationHistory.length > 20) conversationHistory = conversationHistory.slice(-20);
+
+    showResponse(reply);
+    speakResponse(reply);
+
+  } catch (err) {
+    setState('idle');
+    setStatus('error', 'Error al conectar con Claude');
+    showToast(err.message);
+    conversationHistory.pop(); // revertir el mensaje del usuario
+  }
+}
+
+// ── Mostrar respuesta ─────────────────────────────
+function showResponse(text) {
+  const bubble = document.getElementById('responseBubble');
+  const placeholder = document.getElementById('placeholderText');
+  placeholder.style.display = 'none';
+  bubble.classList.add('active');
+  bubble.innerHTML = '';
+  
+  // Efecto de escritura
+  let i = 0;
+  const span = document.createElement('span');
+  span.className = 'typing';
+  bubble.appendChild(span);
+  
+  const interval = setInterval(() => {
+    span.textContent += text[i];
+    i++;
+    if (i >= text.length) {
+      clearInterval(interval);
+      span.className = '';
+    }
+  }, 30);
+}
+
+// ── Text to Speech ────────────────────────────────
+function speakResponse(text) {
+  synth.cancel();
+  setState('speaking');
+  setStatus('ok', 'Matute está hablando...');
+
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.lang = 'es-419';
+  utt.rate = 0.82;
+  utt.pitch = 0.6;  // voz grave
+  utt.volume = 1;
+
+  // Buscar voz en español si hay disponible
+  const voices = synth.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('male'))
+    || voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) utt.voice = esVoice;
+
+  utt.onend = () => {
+    setState('idle');
+    setStatus('ok', 'Matute listo · toca el micrófono');
+    document.getElementById('transcriptText').textContent = '';
+  };
+
+  utt.onerror = () => {
+    setState('idle');
+    setStatus('ok', 'Matute listo · toca el micrófono');
+  };
+
+  synth.speak(utt);
+}
+
+// ── Estado y UI ───────────────────────────────────
+function setState(state) {
+  currentState = state;
+  const btn = document.getElementById('micBtn');
+  const label = document.getElementById('micLabel');
+  
+  btn.className = 'mic-btn';
+  
+  switch(state) {
+    case 'idle':
+      btn.textContent = '🎙';
+      label.textContent = 'toca para hablar';
+      updateSkullState('idle');
+      break;
+    case 'listening':
+      btn.classList.add('listening');
+      btn.textContent = '👂';
+      label.textContent = 'escuchando... toca para parar';
+      updateSkullState('idle');
+      break;
+    case 'thinking':
+      btn.classList.add('thinking');
+      btn.textContent = '💀';
+      label.textContent = 'pensando... toca para cancelar';
+      updateSkullState('thinking');
+      break;
+    case 'speaking':
+      btn.classList.add('speaking');
+      btn.textContent = '🔊';
+      label.textContent = 'hablando... toca para parar';
+      updateSkullState('talking');
+      break;
+  }
+}
+
+function updateSkullState(state) {
+  const container = document.getElementById('skullContainer');
+  container.className = 'skull-container ' + state;
+  
+  const eyeL = container.querySelector('.eye-left');
+  const eyeR = container.querySelector('.eye-right');
+  
+  if (state === 'thinking') {
+    eyeL.style.fill = '#FF8800';
+    eyeR.style.fill = '#FF8800';
+  } else if (state === 'talking') {
+    eyeL.style.fill = '#00FF55';
+    eyeR.style.fill = '#00FF55';
+  } else {
+    eyeL.style.fill = '';
+    eyeR.style.fill = '';
+  }
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('dotApi');
+  const statusText = document.getElementById('statusText');
+  dot.className = 'status-dot ' + (type === 'ok' ? 'ok' : type === 'error' ? 'active' : '');
+  statusText.textContent = text;
+}
+
+// ── Settings ──────────────────────────────────────
+function toggleSettings() {
+  document.getElementById('settingsPanel').classList.toggle('open');
+}
+
+function saveSettings() {
+  apiKey = document.getElementById('apiKeyInput').value.trim();
+  systemPrompt = document.getElementById('systemPromptInput').value.trim();
+  localStorage.setItem('matute_key', apiKey);
+  localStorage.setItem('matute_prompt', systemPrompt);
+  toggleSettings();
+  if (apiKey) setStatus('ok', 'Matute listo · toca el micrófono');
+}
+
+// ── Toast ─────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Cargar voces cuando estén disponibles
+if (synth) synth.onvoiceschanged = () => synth.getVoices();
+</script>
+</body>
+</html>
