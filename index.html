@@ -8,433 +8,397 @@
 <meta name="apple-mobile-web-app-title" content="Matute">
 <title>Matute 💀</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
-  :root { --blood:#8B0000; --ember:#CC2200; --bone:#E8DCC8; --void:#0A0A0A; }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  body {
-    background:var(--void); color:var(--bone);
-    font-family:'Share Tech Mono',monospace;
-    min-height:100vh; min-height:-webkit-fill-available;
-    display:flex; flex-direction:column; align-items:center;
-    justify-content:space-between; padding:20px 16px 40px;
-    overflow:hidden;
-  }
-  body::before {
-    content:''; position:fixed; inset:0;
-    background:radial-gradient(ellipse at 20% 50%,rgba(139,0,0,0.08) 0%,transparent 60%);
-    pointer-events:none;
-  }
-  .header { text-align:center; z-index:1; width:100%; }
-  .title { font-family:'Creepster',cursive; font-size:clamp(2.5rem,10vw,4rem); color:var(--ember); letter-spacing:0.08em; text-shadow:0 0 20px rgba(204,34,0,0.6); line-height:1; }
-  .subtitle { font-size:0.65rem; color:#555; letter-spacing:0.3em; text-transform:uppercase; margin-top:4px; }
-  .skull-container { position:relative; width:180px; height:180px; z-index:1; }
-  .skull-svg { width:100%; height:100%; filter:drop-shadow(0 0 12px rgba(204,34,0,0.4)); }
-  @keyframes pulse-eyes { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  .idle .eye-left,.idle .eye-right { animation:pulse-eyes 2s ease-in-out infinite; fill:#CC0000; }
-  @keyframes thinking-anim { 0%{fill:#FF8800} 50%{fill:#FFCC00} 100%{fill:#FF8800} }
-  .thinking .eye-left,.thinking .eye-right { animation:thinking-anim 0.6s infinite; }
-  .talking .eye-left,.talking .eye-right { fill:#00FF55!important; animation:none; }
-  @keyframes jaw-talk { from{transform:rotate(-2deg)} to{transform:rotate(6deg)} }
-  .jaw { transform-origin:90px 145px; }
-  .talking .jaw { animation:jaw-talk 0.12s ease-in-out infinite alternate; }
-  .status-panel { width:100%; max-width:340px; z-index:1; }
-  .status-bar { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
-  .status-dot { width:8px; height:8px; border-radius:50%; background:#333; flex-shrink:0; transition:background 0.3s; }
-  .status-dot.ok { background:#00AA44; box-shadow:0 0 6px #00AA44; }
-  .status-dot.err { background:#CC2200; box-shadow:0 0 6px #CC2200; }
-  .status-text { font-size:0.7rem; color:#666; }
-  .response-bubble { background:rgba(139,0,0,0.12); border:1px solid rgba(139,0,0,0.25); border-radius:12px; padding:14px 16px; font-size:0.85rem; color:var(--bone); line-height:1.5; min-height:80px; display:flex; align-items:center; justify-content:center; text-align:center; margin-bottom:12px; transition:border-color 0.3s; }
-  .response-bubble.active { border-color:rgba(204,34,0,0.5); box-shadow:0 0 20px rgba(204,34,0,0.1); }
-  .placeholder-text { color:#444; font-style:italic; font-size:0.75rem; }
-  @keyframes cursor { 0%,100%{opacity:1} 50%{opacity:0} }
-  .typing::after { content:'▋'; animation:cursor 0.7s infinite; color:var(--ember); }
-  .transcript { font-size:0.65rem; color:#444; text-align:center; min-height:18px; margin-bottom:16px; font-style:italic; }
-  .mic-area { display:flex; flex-direction:column; align-items:center; gap:12px; z-index:1; }
-  @keyframes mic-pulse { 0%{box-shadow:0 0 0 0 rgba(204,34,0,0.4)} 70%{box-shadow:0 0 0 20px rgba(204,34,0,0)} 100%{box-shadow:0 0 0 0 rgba(204,34,0,0)} }
-  .mic-btn { width:80px; height:80px; border-radius:50%; border:2px solid #333; background:#111; color:var(--bone); font-size:2rem; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s; -webkit-appearance:none; }
-  .mic-btn.listening { border-color:var(--ember); background:rgba(204,34,0,0.15); animation:mic-pulse 1s ease-out infinite; }
-  @keyframes think-border { from{box-shadow:0 0 8px #FF8800} to{box-shadow:0 0 20px #FFCC00} }
-  .mic-btn.thinking { border-color:#FF8800; animation:think-border 0.5s ease-in-out infinite alternate; }
-  .mic-btn.speaking { border-color:#00AA44; box-shadow:0 0 16px rgba(0,170,68,0.4); }
-  .mic-label { font-size:0.65rem; color:#555; letter-spacing:0.2em; text-transform:uppercase; }
-  .auto-badge { font-size:0.6rem; color:#3A6; border:1px solid #3A6; border-radius:4px; padding:2px 8px; }
-
-  /* Pantalla inicio */
-  .start-screen { position:fixed; inset:0; background:#0A0A0A; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:999; gap:24px; }
-  .start-screen.hidden { display:none; }
-  .start-title { font-family:'Creepster',cursive; font-size:3rem; color:var(--ember); text-shadow:0 0 20px rgba(204,34,0,0.6); }
-  .start-btn { width:130px; height:130px; border-radius:50%; border:2px solid var(--ember); background:rgba(204,34,0,0.15); color:var(--bone); font-size:3.5rem; cursor:pointer; -webkit-appearance:none; animation:mic-pulse 1.5s ease-out infinite; }
-  .start-hint { font-size:0.7rem; color:#555; letter-spacing:0.2em; text-transform:uppercase; text-align:center; padding:0 40px; }
-
-  .settings { position:fixed; bottom:0; left:0; right:0; background:#111; border-top:1px solid #222; padding:16px; transform:translateY(100%); transition:transform 0.3s; z-index:100; }
-  .settings.open { transform:translateY(0); }
-  .settings input { width:100%; background:#1A1A1A; border:1px solid #333; border-radius:8px; padding:10px 12px; color:var(--bone); font-family:'Share Tech Mono',monospace; font-size:0.75rem; outline:none; margin-bottom:10px; }
-  .settings input:focus { border-color:var(--ember); }
-  .btn-small { background:var(--blood); color:var(--bone); border:none; border-radius:6px; padding:8px 16px; font-family:'Share Tech Mono',monospace; font-size:0.75rem; cursor:pointer; }
-  .settings-toggle { position:fixed; top:16px; right:16px; background:none; border:1px solid #333; color:#555; border-radius:6px; padding:6px 10px; font-size:0.65rem; cursor:pointer; font-family:'Share Tech Mono',monospace; z-index:10; }
-  .settings-label { font-size:0.65rem; color:#555; letter-spacing:0.1em; margin-bottom:6px; display:block; }
-  .toast { position:fixed; bottom:100px; left:50%; transform:translateX(-50%) translateY(20px); background:#300; border:1px solid var(--blood); color:#FF6666; padding:10px 18px; border-radius:8px; font-size:0.7rem; opacity:0; transition:all 0.3s; pointer-events:none; z-index:200; white-space:nowrap; }
-  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
-  .site-url { font-size:0.5rem; color:#222; position:fixed; bottom:8px; }
+@import url('https://fonts.googleapis.com/css2?family=Creepster&family=Share+Tech+Mono&display=swap');
+:root{--ember:#CC2200;--bone:#E8DCC8;--void:#0A0A0A;--blood:#8B0000;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{background:var(--void);color:var(--bone);font-family:'Share Tech Mono',monospace;min-height:100vh;min-height:-webkit-fill-available;display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:20px 16px 40px;overflow:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 50%,rgba(139,0,0,0.08) 0%,transparent 60%);pointer-events:none;}
+.title{font-family:'Creepster',cursive;font-size:clamp(2.5rem,10vw,4rem);color:var(--ember);letter-spacing:.08em;text-shadow:0 0 20px rgba(204,34,0,0.6);line-height:1;text-align:center;}
+.subtitle{font-size:.65rem;color:#555;letter-spacing:.3em;text-transform:uppercase;margin-top:4px;text-align:center;}
+.skull-svg{width:180px;height:180px;filter:drop-shadow(0 0 12px rgba(204,34,0,0.4));}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes jaw-anim{from{transform:rotate(-2deg)}to{transform:rotate(6deg)}}
+.jaw{transform-origin:90px 145px;}
+.jaw-talk{animation:jaw-anim .12s ease-in-out infinite alternate;}
+.status-bar{display:flex;align-items:center;gap:8px;margin-bottom:8px;width:100%;max-width:340px;}
+.dot{width:8px;height:8px;border-radius:50%;background:#333;flex-shrink:0;transition:background .3s;}
+.dot.ok{background:#00AA44;box-shadow:0 0 6px #00AA44;}
+.dot.err{background:#CC2200;box-shadow:0 0 6px #CC2200;}
+.dot.think{background:#FF8800;box-shadow:0 0 6px #FF8800;}
+.status-txt{font-size:.7rem;color:#666;}
+.bubble{background:rgba(139,0,0,.12);border:1px solid rgba(139,0,0,.25);border-radius:12px;padding:14px 16px;font-size:.85rem;color:var(--bone);line-height:1.5;min-height:80px;display:flex;align-items:center;justify-content:center;text-align:center;width:100%;max-width:340px;margin-bottom:8px;}
+.bubble.active{border-color:rgba(204,34,0,.5);}
+.transcript{font-size:.65rem;color:#444;text-align:center;min-height:18px;font-style:italic;width:100%;max-width:340px;}
+@keyframes mic-pulse{0%{box-shadow:0 0 0 0 rgba(204,34,0,.4)}70%{box-shadow:0 0 0 20px rgba(204,34,0,0)}100%{box-shadow:0 0 0 0 rgba(204,34,0,0)}}
+.mic-btn{width:80px;height:80px;border-radius:50%;border:2px solid #333;background:#111;color:var(--bone);font-size:2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none;transition:all .2s;}
+.mic-btn.listening{border-color:var(--ember);animation:mic-pulse 1s ease-out infinite;}
+.mic-btn.thinking{border-color:#FF8800;}
+.mic-btn.speaking{border-color:#00AA44;box-shadow:0 0 16px rgba(0,170,68,.4);}
+.mic-lbl{font-size:.65rem;color:#555;letter-spacing:.2em;text-transform:uppercase;margin-top:8px;}
+.auto-badge{font-size:.6rem;color:#3A6;border:1px solid #3A6;border-radius:4px;padding:2px 8px;margin-top:4px;}
+.start-screen{position:fixed;inset:0;background:#0A0A0A;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:24px;}
+.start-screen.hidden{display:none;}
+.start-title{font-family:'Creepster',cursive;font-size:3.5rem;color:var(--ember);text-shadow:0 0 20px rgba(204,34,0,.6);}
+.start-btn{width:140px;height:140px;border-radius:50%;border:2px solid var(--ember);background:rgba(204,34,0,.15);color:var(--bone);font-size:4rem;cursor:pointer;-webkit-appearance:none;animation:mic-pulse 1.5s ease-out infinite;}
+.start-hint{font-size:.7rem;color:#555;letter-spacing:.2em;text-align:center;padding:0 40px;}
+.settings{position:fixed;bottom:0;left:0;right:0;background:#111;border-top:1px solid #222;padding:16px;transform:translateY(100%);transition:transform .3s;z-index:100;}
+.settings.open{transform:translateY(0);}
+.settings input{width:100%;background:#1A1A1A;border:1px solid #333;border-radius:8px;padding:10px 12px;color:var(--bone);font-family:'Share Tech Mono',monospace;font-size:.75rem;outline:none;margin-bottom:10px;}
+.settings input:focus{border-color:var(--ember);}
+.lbl{font-size:.65rem;color:#555;letter-spacing:.1em;margin-bottom:6px;display:block;}
+.btn-save{background:var(--blood);color:var(--bone);border:none;border-radius:6px;padding:8px 16px;font-family:'Share Tech Mono',monospace;font-size:.75rem;cursor:pointer;}
+.cfg-btn{position:fixed;top:16px;right:16px;background:none;border:1px solid #333;color:#555;border-radius:6px;padding:6px 10px;font-size:.65rem;cursor:pointer;font-family:'Share Tech Mono',monospace;z-index:10;}
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);background:#300;border:1px solid var(--blood);color:#FF6666;padding:10px 18px;border-radius:8px;font-size:.7rem;opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
 
 <div class="start-screen" id="startScreen">
   <div class="start-title">💀 MATUTE</div>
-  <button class="start-btn" id="startBtn" onclick="startMatute()">🎙</button>
-  <div class="start-hint">tocá para despertar · después escucha solo</div>
+  <button class="start-btn" onclick="iniciar()">🎙</button>
+  <div class="start-hint">tocá una vez · después escucha solo</div>
 </div>
 
-<button class="settings-toggle" onclick="toggleSettings()">⚙ CONFIG</button>
+<button class="cfg-btn" onclick="toggleCfg()">⚙ CONFIG</button>
 
-<div class="header">
+<div style="text-align:center;z-index:1">
   <div class="title">MATUTE</div>
-  <div class="subtitle">cráneo · inteligencia artificial · v3.0</div>
+  <div class="subtitle">cráneo · ia · v4.0</div>
 </div>
 
-<div class="skull-container idle" id="skullContainer">
-  <svg class="skull-svg" viewBox="0 0 180 190" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="90" cy="80" rx="72" ry="75" fill="#1A1A1A" stroke="#3A2A2A" stroke-width="1.5"/>
-    <ellipse cx="90" cy="60" rx="55" ry="48" fill="#111"/>
-    <ellipse cx="32" cy="100" rx="20" ry="16" fill="#161616"/>
-    <ellipse cx="148" cy="100" rx="20" ry="16" fill="#161616"/>
-    <ellipse cx="62" cy="82" rx="22" ry="20" fill="#050505"/>
-    <ellipse cx="118" cy="82" rx="22" ry="20" fill="#050505"/>
-    <ellipse class="eye-left" cx="62" cy="82" rx="14" ry="13" fill="#CC0000"/>
-    <ellipse cx="62" cy="82" rx="6" ry="6" fill="#000" opacity="0.5"/>
-    <ellipse class="eye-right" cx="118" cy="82" rx="14" ry="13" fill="#CC0000"/>
-    <ellipse cx="118" cy="82" rx="6" ry="6" fill="#000" opacity="0.5"/>
-    <path d="M82 108 Q90 118 98 108" stroke="#2A1A1A" stroke-width="2" fill="none"/>
-    <ellipse cx="85" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
-    <ellipse cx="95" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
-    <rect x="28" y="128" width="124" height="12" rx="4" fill="#151515" stroke="#2A2A2A" stroke-width="1"/>
-    <g class="jaw">
-      <path d="M35 135 Q35 165 90 168 Q145 165 145 135" fill="#181818" stroke="#2A2A2A" stroke-width="1.5"/>
-      <rect x="55" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
-      <rect x="68" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
-      <rect x="81" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
-      <rect x="94" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
-      <rect x="107" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
-      <rect x="58" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
-      <rect x="70" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
-      <rect x="82" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
-      <rect x="94" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
-      <rect x="106" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
-      <ellipse cx="90" cy="166" rx="30" ry="8" fill="#151515"/>
-    </g>
-    <path d="M90 15 L88 35 L92 45" stroke="#2A2A2A" stroke-width="1" fill="none"/>
-  </svg>
-</div>
+<svg class="skull-svg" id="skull" viewBox="0 0 180 190" fill="none">
+  <ellipse cx="90" cy="80" rx="72" ry="75" fill="#1A1A1A" stroke="#3A2A2A" stroke-width="1.5"/>
+  <ellipse cx="90" cy="60" rx="55" ry="48" fill="#111"/>
+  <ellipse cx="32" cy="100" rx="20" ry="16" fill="#161616"/>
+  <ellipse cx="148" cy="100" rx="20" ry="16" fill="#161616"/>
+  <ellipse cx="62" cy="82" rx="22" ry="20" fill="#050505"/>
+  <ellipse cx="118" cy="82" rx="22" ry="20" fill="#050505"/>
+  <ellipse id="eyeL" cx="62" cy="82" rx="14" ry="13" fill="#CC0000"/>
+  <ellipse cx="62" cy="82" rx="6" ry="6" fill="#000" opacity=".5"/>
+  <ellipse id="eyeR" cx="118" cy="82" rx="14" ry="13" fill="#CC0000"/>
+  <ellipse cx="118" cy="82" rx="6" ry="6" fill="#000" opacity=".5"/>
+  <ellipse cx="85" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
+  <ellipse cx="95" cy="110" rx="5" ry="4" fill="#0A0A0A"/>
+  <rect x="28" y="128" width="124" height="12" rx="4" fill="#151515" stroke="#2A2A2A" stroke-width="1"/>
+  <g id="jaw" class="jaw">
+    <path d="M35 135 Q35 165 90 168 Q145 165 145 135" fill="#181818" stroke="#2A2A2A" stroke-width="1.5"/>
+    <rect x="55" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
+    <rect x="68" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+    <rect x="81" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+    <rect x="94" y="133" width="10" height="14" rx="2" fill="#D4C9A8"/>
+    <rect x="107" y="133" width="10" height="12" rx="2" fill="#D4C9A8"/>
+    <rect x="58" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
+    <rect x="70" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+    <rect x="82" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+    <rect x="94" y="151" width="9" height="13" rx="2" fill="#C8BC9A"/>
+    <rect x="106" y="152" width="9" height="11" rx="2" fill="#C8BC9A"/>
+  </g>
+  <path d="M90 15 L88 35 L92 45" stroke="#2A2A2A" stroke-width="1" fill="none"/>
+</svg>
 
-<div class="status-panel">
+<div style="width:100%;max-width:340px;z-index:1">
   <div class="status-bar">
-    <div class="status-dot" id="dotApi"></div>
-    <div class="status-text" id="statusText">Tocá el cráneo para despertar</div>
+    <div class="dot" id="dot"></div>
+    <div class="status-txt" id="stxt">Tocá el cráneo para comenzar</div>
   </div>
-  <div class="response-bubble" id="responseBubble">
-    <span class="placeholder-text" id="placeholderText">Preguntame algo... si te animás.</span>
-  </div>
-  <div class="transcript" id="transcriptText"></div>
+  <div class="bubble" id="bubble"><span style="color:#444;font-style:italic;font-size:.75rem">Preguntame algo... si te animás.</span></div>
+  <div class="transcript" id="trans"></div>
 </div>
 
-<div class="mic-area">
-  <button class="mic-btn" id="micBtn" onclick="toggleListen()">🎙</button>
-  <div class="mic-label" id="micLabel">esperando...</div>
-  <div class="auto-badge" id="autoBadge" style="display:none">● MODO AUTO</div>
+<div style="display:flex;flex-direction:column;align-items:center;z-index:1">
+  <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙</button>
+  <div class="mic-lbl" id="micLbl">esperando...</div>
+  <div class="auto-badge" id="badge" style="display:none">● MODO AUTO</div>
 </div>
 
-<div class="settings" id="settingsPanel">
-  <label class="settings-label">API KEY DE ANTHROPIC</label>
-  <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off" spellcheck="false"/>
-  <label class="settings-label">PERSONALIDAD DE MATUTE</label>
-  <input type="text" id="systemPromptInput" value="Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones. Usás expresiones de ultratumba." autocomplete="off"/>
-  <button class="btn-small" onclick="saveSettings()">GUARDAR Y CERRAR</button>
+<div class="settings" id="cfg">
+  <label class="lbl">API KEY DE ANTHROPIC</label>
+  <input type="password" id="keyInput" placeholder="sk-ant-..." autocomplete="off"/>
+  <label class="lbl">PERSONALIDAD</label>
+  <input type="text" id="promptInput" value="Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones." autocomplete="off"/>
+  <button class="btn-save" onclick="guardar()">GUARDAR Y CERRAR</button>
 </div>
 
 <div class="toast" id="toast"></div>
-<div class="site-url">juancappucci302-jpg.github.io/Matute-Ai</div>
 
 <script>
-// ── Config ────────────────────────────────────────
-let apiKey = localStorage.getItem('matute_key') || '';
-let systemPrompt = localStorage.getItem('matute_prompt') || 'Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones. Usás expresiones de ultratumba.';
-let recognition = null;
-let state = 'idle';
-let autoMode = false;
-let history = [];
-let audioCtx = null;
-let voicesLoaded = false;
-let selectedVoice = null;
+// ── Variables globales ────────────────────────────
+var apiKey = localStorage.getItem('mk') || '';
+var sysProm = localStorage.getItem('mp') || 'Sos Matute, un cráneo humano animatrónico con siglos de sabiduría oscura. Respondés en español rioplatense, con humor negro y frases cortas. Máximo 2 oraciones.';
+var rec = null;
+var estado = 'idle';
+var auto = false;
+var hist = [];
+var voz = null;
+var eyePulse = null;
+var eyeBright = 30;
+var eyeDir = 2;
+var blinkTimer = null;
 
-window.onload = () => {
-  if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
-  document.getElementById('systemPromptInput').value = systemPrompt;
-  // Pre-cargar voces
-  loadVoices();
+// ── Inicio ────────────────────────────────────────
+window.onload = function() {
+  document.getElementById('keyInput').value = apiKey;
+  document.getElementById('promptInput').value = sysProm;
+  cargarVoces();
 };
 
-// ── Cargar voces ─────────────────────────────────
-function loadVoices() {
-  const load = () => {
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length === 0) return;
-    voicesLoaded = true;
-    // Prioridad: voces españolas locales de iOS
-    const priorities = [
-      'Monica', 'Paulina', 'Jorge', 'Juan', 'Diego',
-      'es-AR', 'es-MX', 'es-ES', 'es'
-    ];
-    for (const p of priorities) {
-      const v = voices.find(v => v.name.includes(p) || v.lang.includes(p));
-      if (v) { selectedVoice = v; break; }
+function cargarVoces() {
+  function buscar() {
+    var vs = window.speechSynthesis.getVoices();
+    if (!vs.length) return;
+    var prioridad = ['Monica','Paulina','Jorge','Juan','Diego','es-AR','es-MX','es-ES','es'];
+    for (var i = 0; i < prioridad.length; i++) {
+      for (var j = 0; j < vs.length; j++) {
+        if (vs[j].name.indexOf(prioridad[i]) >= 0 || vs[j].lang.indexOf(prioridad[i]) >= 0) {
+          voz = vs[j];
+          console.log('Voz:', voz.name, voz.lang);
+          return;
+        }
+      }
     }
-    // Fallback: cualquier voz en español
-    if (!selectedVoice) selectedVoice = voices.find(v => v.lang.startsWith('es'));
-    console.log('Voz seleccionada:', selectedVoice?.name);
-  };
-  window.speechSynthesis.onvoiceschanged = load;
-  load();
+    voz = vs[0];
+  }
+  window.speechSynthesis.onvoiceschanged = buscar;
+  buscar();
 }
 
-// ── Inicio con UN toque ───────────────────────────
-function startMatute() {
-  // Desbloquear AudioContext iOS
+// ── Pantalla inicio ───────────────────────────────
+function iniciar() {
+  // Desbloquear audio iOS con utterance silenciosa
   try {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const buf = audioCtx.createBuffer(1, 1, 22050);
-    const src = audioCtx.createBufferSource();
-    src.buffer = buf;
-    src.connect(audioCtx.destination);
-    src.start(0);
-  } catch(e) {}
-
-  // Desbloquear speechSynthesis con utterance vacía
-  const unlock = new SpeechSynthesisUtterance(' ');
-  unlock.volume = 0;
-  unlock.onend = () => {
-    // Ya desbloqueado, ocultar pantalla inicio
+    var u = new SpeechSynthesisUtterance('.');
+    u.volume = 0.01;
+    u.rate = 10;
+    u.onend = function() {
+      document.getElementById('startScreen').classList.add('hidden');
+      auto = true;
+      document.getElementById('badge').style.display = 'block';
+      if (!apiKey) { toggleCfg(); toast('Configurá tu API key'); return; }
+      setupRec();
+      setTimeout(escuchar, 500);
+      iniciarPulsoOjos();
+    };
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch(e) {
     document.getElementById('startScreen').classList.add('hidden');
-    autoMode = true;
-    document.getElementById('autoBadge').style.display = 'block';
-
-    if (!apiKey) { toggleSettings(); showToast('Configurá tu API key primero'); return; }
-    setupRecognition();
-    setTimeout(startListening, 300);
-  };
-  window.speechSynthesis.speak(unlock);
+    auto = true;
+    document.getElementById('badge').style.display = 'block';
+    setupRec();
+    setTimeout(escuchar, 500);
+    iniciarPulsoOjos();
+  }
 }
 
-// ── Speech Recognition ────────────────────────────
-function setupRecognition() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { showToast('Sin soporte de voz'); return; }
+// ── Pulso ojos idle ───────────────────────────────
+function iniciarPulsoOjos() {
+  clearInterval(eyePulse);
+  eyePulse = setInterval(function() {
+    if (estado !== 'idle') return;
+    eyeBright += eyeDir;
+    if (eyeBright >= 180 || eyeBright <= 20) eyeDir = -eyeDir;
+    var c = 'rgb(' + eyeBright + ',0,0)';
+    document.getElementById('eyeL').style.fill = c;
+    document.getElementById('eyeR').style.fill = c;
+  }, 15);
+}
 
-  recognition = new SR();
-  recognition.lang = 'es-AR';
-  recognition.continuous = false;
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 1;
+function setOjos(r, g, b) {
+  var c = 'rgb(' + r + ',' + g + ',' + b + ')';
+  document.getElementById('eyeL').style.fill = c;
+  document.getElementById('eyeR').style.fill = c;
+}
 
-  recognition.onstart = () => {
-    setState('listening');
-    document.getElementById('transcriptText').textContent = 'Escuchando...';
+// ── Reconocimiento voz ────────────────────────────
+function setupRec() {
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { toast('Sin soporte de voz'); return; }
+  rec = new SR();
+  rec.lang = 'es-AR';
+  rec.continuous = false;
+  rec.interimResults = true;
+
+  rec.onstart = function() {
+    setEstado('listening');
+    document.getElementById('trans').textContent = 'Escuchando...';
   };
 
-  recognition.onresult = (e) => {
-    const txt = Array.from(e.results).map(r => r[0].transcript).join('');
-    document.getElementById('transcriptText').textContent = '» ' + txt;
-    if (e.results[e.results.length - 1].isFinal && txt.trim().length > 1) {
-      recognition.stop();
-      askClaude(txt.trim());
+  rec.onresult = function(e) {
+    var txt = '';
+    for (var i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
+    document.getElementById('trans').textContent = '» ' + txt;
+    if (e.results[e.results.length-1].isFinal && txt.trim().length > 1) {
+      rec.stop();
+      preguntarClaude(txt.trim());
     }
   };
 
-  recognition.onerror = (e) => {
-    if (e.error === 'no-speech') {
-      if (autoMode) setTimeout(startListening, 500);
-      return;
-    }
+  rec.onerror = function(e) {
+    if (e.error === 'no-speech') { if (auto) setTimeout(escuchar, 600); return; }
     if (e.error === 'aborted') return;
-    setState('idle');
-    showToast('Mic: ' + e.error);
+    setEstado('idle');
+    toast('Mic: ' + e.error);
   };
 
-  recognition.onend = () => {
-    if (state === 'listening' && autoMode) setTimeout(startListening, 400);
+  rec.onend = function() {
+    if (estado === 'listening' && auto) setTimeout(escuchar, 400);
   };
 }
 
-function startListening() {
-  if (state === 'thinking' || state === 'speaking') return;
-  try { recognition?.start(); } catch(e) {}
+function escuchar() {
+  if (estado === 'thinking' || estado === 'speaking') return;
+  try { rec && rec.start(); } catch(e) {}
 }
 
-function toggleListen() {
-  if (!autoMode) { startMatute(); return; }
-  if (state === 'listening') { recognition?.stop(); setState('idle'); }
-  else if (state === 'speaking') { window.speechSynthesis.cancel(); setState('idle'); if (autoMode) setTimeout(startListening, 400); }
-  else startListening();
+function toggleMic() {
+  if (!auto) { iniciar(); return; }
+  if (estado === 'listening') { rec && rec.stop(); setEstado('idle'); }
+  else if (estado === 'speaking') { window.speechSynthesis.cancel(); setEstado('idle'); if (auto) setTimeout(escuchar, 400); }
+  else escuchar();
 }
 
 // ── Claude API ────────────────────────────────────
-async function askClaude(text) {
-  setState('thinking');
-  setStatus('ok', 'Matute está pensando...');
-  history.push({ role: 'user', content: text });
+function preguntarClaude(texto) {
+  setEstado('thinking');
+  setStatus('think', 'Matute está pensando...');
+  setOjos(255, 140, 0);
+  hist.push({role:'user', content:texto});
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'x-api-key': apiKey,
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 250,
-        system: systemPrompt,
-        messages: history
-      })
-    });
-
-    if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Error API'); }
-    const data = await res.json();
-    const reply = data.content[0].text;
-    history.push({ role: 'assistant', content: reply });
-    if (history.length > 16) history = history.slice(-16);
-
-    showResponse(reply);
-    speakResponse(reply);
-
-  } catch(err) {
-    setState('idle');
-    setStatus('err', 'Error: ' + err.message.slice(0, 40));
-    history.pop();
-    if (autoMode) setTimeout(startListening, 2000);
-  }
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'anthropic-version': '2023-06-01',
+      'x-api-key': apiKey,
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 250,
+      system: sysProm,
+      messages: hist
+    })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message);
+    var reply = data.content[0].text;
+    hist.push({role:'assistant', content:reply});
+    if (hist.length > 16) hist = hist.slice(-16);
+    mostrarRespuesta(reply);
+    hablar(reply);
+  })
+  .catch(function(err) {
+    setEstado('idle');
+    setStatus('err', 'Error: ' + err.message.slice(0,40));
+    hist.pop();
+    if (auto) setTimeout(escuchar, 2000);
+  });
 }
 
 // ── Mostrar texto ─────────────────────────────────
-function showResponse(text) {
-  const b = document.getElementById('responseBubble');
-  document.getElementById('placeholderText').style.display = 'none';
+function mostrarRespuesta(txt) {
+  var b = document.getElementById('bubble');
   b.classList.add('active');
   b.innerHTML = '';
-  const span = document.createElement('span');
-  span.className = 'typing';
-  b.appendChild(span);
-  let i = 0;
-  const iv = setInterval(() => {
-    span.textContent += text[i++];
-    if (i >= text.length) { clearInterval(iv); span.className = ''; }
+  var i = 0;
+  var iv = setInterval(function() {
+    b.textContent += txt[i++];
+    if (i >= txt.length) clearInterval(iv);
   }, 28);
 }
 
-// ── TTS — voz de Matute ───────────────────────────
-function speakResponse(text) {
-  setState('speaking');
+// ── TTS ───────────────────────────────────────────
+function hablar(txt) {
+  setEstado('speaking');
   setStatus('ok', 'Matute está hablando...');
+  setOjos(0, 255, 80);
+  document.getElementById('jaw').classList.add('jaw-talk');
+
+  // Limpiar acciones entre asteriscos
+  var limpio = txt.replace(/\*[^*]+\*/g, '').trim();
+
   window.speechSynthesis.cancel();
 
-  // Limpiar asteriscos de acción (*traquetea*, etc)
-  const clean = text.replace(/\*[^*]+\*/g, '').trim();
+  setTimeout(function() {
+    if (!window.speechSynthesis) { terminarHabla(); return; }
 
-  setTimeout(() => {
-    const utt = new SpeechSynthesisUtterance(clean);
-    utt.lang = 'es-AR';
-    utt.rate = 0.80;
-    utt.pitch = 0.50;   // voz muy grave
-    utt.volume = 1.0;
+    var u = new SpeechSynthesisUtterance(limpio);
+    u.lang = 'es-AR';
+    u.rate = 0.82;
+    u.pitch = 0.50;
+    u.volume = 1.0;
+    if (voz) u.voice = voz;
 
-    // Usar la mejor voz disponible
-    if (!voicesLoaded) loadVoices();
-    if (selectedVoice) utt.voice = selectedVoice;
-
-    utt.onstart = () => updateSkull('talking');
-
-    utt.onend = () => {
-      setState('idle');
-      setStatus('ok', 'Matute escucha...');
-      document.getElementById('transcriptText').textContent = '';
-      if (autoMode) setTimeout(startListening, 700);
-    };
-
-    utt.onerror = (e) => {
+    u.onend = function() { terminarHabla(); };
+    u.onerror = function(e) {
       if (e.error === 'interrupted' || e.error === 'canceled') return;
-      setState('idle');
-      showToast('Voz: ' + e.error);
-      if (autoMode) setTimeout(startListening, 1000);
+      terminarHabla();
     };
 
-    window.speechSynthesis.speak(utt);
-
-    // Fix iOS: evitar que speechSynthesis se pause solo
-    const timer = setInterval(() => {
-      if (!window.speechSynthesis.speaking) { clearInterval(timer); return; }
+    // Fix iOS: re-resume cada 10s para evitar que se corte
+    var keepAlive = setInterval(function() {
+      if (!window.speechSynthesis.speaking) { clearInterval(keepAlive); return; }
       window.speechSynthesis.pause();
       window.speechSynthesis.resume();
-    }, 12000);
+    }, 10000);
 
-  }, 150);
+    window.speechSynthesis.speak(u);
+  }, 200);
 }
 
-// ── UI ────────────────────────────────────────────
-function setState(s) {
-  state = s;
-  const btn = document.getElementById('micBtn');
-  const lbl = document.getElementById('micLabel');
+function terminarHabla() {
+  document.getElementById('jaw').classList.remove('jaw-talk');
+  setEstado('idle');
+  setStatus('ok', 'Matute escucha...');
+  document.getElementById('trans').textContent = '';
+  if (auto) setTimeout(escuchar, 700);
+}
+
+// ── UI helpers ────────────────────────────────────
+function setEstado(s) {
+  estado = s;
+  var btn = document.getElementById('micBtn');
+  var lbl = document.getElementById('micLbl');
   btn.className = 'mic-btn';
-  switch(s) {
-    case 'idle':
-      btn.textContent = '🎙';
-      lbl.textContent = autoMode ? 'modo auto activo' : 'toca para hablar';
-      updateSkull('idle'); break;
-    case 'listening':
-      btn.classList.add('listening'); btn.textContent = '👂';
-      lbl.textContent = 'escuchando...'; break;
-    case 'thinking':
-      btn.classList.add('thinking'); btn.textContent = '💀';
-      lbl.textContent = 'pensando...'; updateSkull('thinking'); break;
-    case 'speaking':
-      btn.classList.add('speaking'); btn.textContent = '🔊';
-      lbl.textContent = 'hablando...'; break;
+  if (s === 'idle') {
+    btn.textContent = '🎙';
+    lbl.textContent = auto ? 'modo auto activo' : 'toca para hablar';
+    setOjos(eyeBright, 0, 0);
+  } else if (s === 'listening') {
+    btn.classList.add('listening'); btn.textContent = '👂';
+    lbl.textContent = 'escuchando...';
+  } else if (s === 'thinking') {
+    btn.classList.add('thinking'); btn.textContent = '💀';
+    lbl.textContent = 'pensando...';
+  } else if (s === 'speaking') {
+    btn.classList.add('speaking'); btn.textContent = '🔊';
+    lbl.textContent = 'hablando...';
   }
 }
 
-function updateSkull(s) {
-  const c = document.getElementById('skullContainer');
-  c.className = 'skull-container ' + s;
-  const eL = c.querySelector('.eye-left');
-  const eR = c.querySelector('.eye-right');
-  eL.style.fill = s === 'thinking' ? '#FF8800' : s === 'talking' ? '#00FF55' : '';
-  eR.style.fill = s === 'thinking' ? '#FF8800' : s === 'talking' ? '#00FF55' : '';
+function setStatus(tipo, txt) {
+  document.getElementById('dot').className = 'dot ' + tipo;
+  document.getElementById('stxt').textContent = txt;
 }
 
-function setStatus(type, text) {
-  document.getElementById('dotApi').className = 'status-dot ' + type;
-  document.getElementById('statusText').textContent = text;
+function toggleCfg() { document.getElementById('cfg').classList.toggle('open'); }
+
+function guardar() {
+  apiKey = document.getElementById('keyInput').value.trim();
+  sysProm = document.getElementById('promptInput').value.trim();
+  localStorage.setItem('mk', apiKey);
+  localStorage.setItem('mp', sysProm);
+  toggleCfg();
+  if (apiKey) setStatus('ok', 'Listo ✓');
 }
 
-function toggleSettings() { document.getElementById('settingsPanel').classList.toggle('open'); }
-
-function saveSettings() {
-  apiKey = document.getElementById('apiKeyInput').value.trim();
-  systemPrompt = document.getElementById('systemPromptInput').value.trim();
-  localStorage.setItem('matute_key', apiKey);
-  localStorage.setItem('matute_prompt', systemPrompt);
-  toggleSettings();
-  if (apiKey) setStatus('ok', 'API key guardada ✓');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
+function toast(msg) {
+  var t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
+  setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 </script>
 </body>
 </html>
-
