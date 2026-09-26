@@ -400,5 +400,27 @@ function toast(msg) {
   setTimeout(function() { t.classList.remove('show'); }, 3500);
 }
 </script>
+  <script>
+let wakeLock = null;
+
+async function mantenerPantallaEncendida() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      console.log('Pantalla de Matute siempre encendida');
+    }
+  } catch (err) {
+    console.log('Wake Lock:', err);
+  }
+}
+
+mantenerPantallaEncendida();
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    mantenerPantallaEncendida();
+  }
+});
+</script>
 </body>
 </html>
